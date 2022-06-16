@@ -30,10 +30,13 @@ contract ERC721 {
     }
 
     // Finds the owner of an NFT
-    function ownerOf(uint256 _tokenId) public view returns (address) {
-        address owner = owners[_tokenId];
-        require(owner != address(0), "TokenID does not exist");
-        return owner;
+    function ownerOf(uint256 _tokenId)
+        public
+        view
+        tokenIdExists(_tokenId)
+        returns (address)
+    {
+        return owners[_tokenId];
     }
 
     // OPERATOR
@@ -65,8 +68,12 @@ contract ERC721 {
     }
 
     // Gets the approved address for a single NFT
-    function getApproved(uint256 _tokenId) public view returns (address) {
-        require(owners[_tokenId] != address(0), "Token ID does not exist");
+    function getApproved(uint256 _tokenId)
+        public
+        view
+        tokenIdExists(_tokenId)
+        returns (address)
+    {
         return tokenApprovals[_tokenId];
     }
 
@@ -76,7 +83,7 @@ contract ERC721 {
         address _from,
         address _to,
         uint256 _tokenId
-    ) public {
+    ) public tokenIdExists(_tokenId) {
         address owner = ownerOf(_tokenId);
         require(
             msg.sender == owner ||
@@ -86,7 +93,6 @@ contract ERC721 {
         );
         require(owner == _from, "From address is not the owner");
         require(_to != address(0), "Address is zero");
-        require(owners[_tokenId] != address(0), "TokenID does not exist");
         approve(address(0), _tokenId);
 
         balances[_from] -= 1;
@@ -122,12 +128,17 @@ contract ERC721 {
     }
 
     // EIP165: Query if a contract implements another interface (checks if another smart contract have the functions that are been looked for)
-    function supportsInterface(bytes4 interfaceId)
+    function supportsInterface(bytes4 _interfaceId)
         public
         pure
         virtual
         returns (bool)
     {
-        return interfaceId == 0x80ac58cd;
+        return _interfaceId == 0x80ac58cd;
+    }
+
+    modifier tokenIdExists(uint256 _tokenId) {
+        require(owners[_tokenId] != address(0), "TokenId does not exist");
+        _;
     }
 }
